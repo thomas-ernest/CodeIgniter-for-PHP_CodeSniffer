@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ruleset name="CodeIgniter">
+  <description>CodeIgniter coding standard as described at http://codeigniter.com/user_guide/general/styleguide.html.</description>
+  <rule ref="CodeIgniter.Files.ClosingLocationComment">
+    <properties>
+      <!-- End of the path pointing to your project's application root or all of it. -->
+      <property name="applicationRoot" value="/application/"/>
+    </properties>
+  </rule>
+  <rule ref="PEAR.Files.LineEndings"/>
+  <rule ref="Zend.Files.ClosingTag"/>
+  <rule ref="Generic.PHP.DisallowShortOpenTag"/>
+  <rule ref="Squiz.Classes.ClassFileName"/>
+  <rule ref="Generic.NamingConventions.UpperCaseConstantName"/>
+  <rule ref="Generic.PHP.UpperCaseConstant"/>
+  <rule ref="Generic.Formatting.DisallowMultipleStatements"/>
+  <!-- @todo Please see PHP_CodeSniffer_Standards_CodeIgniter_CodeIgniterCodingStandard for more details about what there is to do -->
+</ruleset>
+
