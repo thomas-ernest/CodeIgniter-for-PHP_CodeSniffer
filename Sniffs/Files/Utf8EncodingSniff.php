@@ -15,7 +15,7 @@
 /**
  * CodeIgniter_Sniffs_Files_Utf8EncodingSniff.
  *
- * Ensures that PHP files are encoded with UTF-8 charset.
+ * Ensures that PHP files are encoded with Unicode (UTF-8) encoding.
  *
  * @category  PHP
  * @package   PHP_CodeSniffer
@@ -74,24 +74,17 @@ class CodeIgniter_Sniffs_Files_Utf8EncodingSniff implements PHP_CodeSniffer_Snif
             $error = 'File "' . $file_name . '" should be saved with Unicode (UTF-8) encoding, but it did not meet RFC3629 requirements.';
             $phpcsFile->addError($error, 0);
         }
-        /*
-         * 
-        if ( ! self::_check_utf8_byte_sequence($file_content))
-        {
-            $error = 'File "' . $file_name . '" should be saved with Unicode (UTF-8) encoding, but it contains one or several bad byte sequences.';
-            $phpcsFile->addError($error, 0);
-        }
-         *
-         */
     }//end process()
 
 
     /**
-     * .
+     * Checks that the string $content contains only valid UTF-8 chars
+     * using W3C's method.
+     * Returns true if $content contains only UTF-8 chars, false otherwise.
      *
-     * @param string $content .
+     * @param string $content String to check.
      *
-     * @return bool .
+     * @return bool true if $content contains only UTF-8 chars, false otherwise.
      *
      * @see http://w3.org/International/questions/qa-forms-utf-8.html
      */
@@ -110,14 +103,16 @@ class CodeIgniter_Sniffs_Files_Utf8EncodingSniff implements PHP_CodeSniffer_Snif
             )*$%xs',
             $content
         );
-    }
+    }//end _checkUtf8W3c()
 
     /**
-     * .
+     * Checks that the string $content contains only valid UTF-8 chars
+     * using the method described in RFC 3629.
+     * Returns true if $content contains only UTF-8 chars, false otherwise.
      *
-     * @param string $content .
+     * @param string $content String to check.
      *
-     * @return bool .
+     * @return bool true if $content contains only UTF-8 chars, false otherwise.
      *
      * @see http://www.php.net/manual/en/function.mb-detect-encoding.php#85294
      */
@@ -154,28 +149,8 @@ class CodeIgniter_Sniffs_Files_Utf8EncodingSniff implements PHP_CodeSniffer_Snif
             }
         }
         return true;
-    }
+    }//_checkUtf8Rfc3629()
 
-    /*
-     * .
-     *
-     * @param string $content .
-     *
-     * @return bool .
-     *
-    private static function _check_utf8_byte_sequence ($content)
-    {
-        $fs = 'UTF-8';
-        $ts = 'UTF-32';
-        $content_converted_twice = mb_convert_encoding(
-            mb_convert_encoding($content, $fs, $ts),
-            $ts,
-            $fs
-        );
-        return md5($content) === md5($content_converted_twice);
-    }
-     *
-     */
 }//end class
 
 ?>

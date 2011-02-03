@@ -15,8 +15,11 @@
 /**
  * CodeIgniter_Sniffs_Strings_DoubleQuoteUsageSniff.
  *
- * Ensures that variables parsed in double-quoted strings are enclosed with
- * braces to prevent greedy token parsing.
+ * Ensures that double-quoted strings are used only to parse variables or
+ * to avoid escape characters before single quotes.
+ * If a double-quoted string contain both single and double quotes
+ * but no variable, then a warning is raised to encourage the use of
+ * single-quoted strings.
  *
  * @category  PHP
  * @package   PHP_CodeSniffer
@@ -35,10 +38,9 @@ class CodeIgniter_Sniffs_Strings_DoubleQuoteUsageSniff implements PHP_CodeSniffe
     public function register()
     {
         return array(
-                T_DOUBLE_QUOTED_STRING,
-                T_CONSTANT_ENCAPSED_STRING,
-               );
-
+            T_DOUBLE_QUOTED_STRING,
+            T_CONSTANT_ENCAPSED_STRING,
+        );
     }//end register()
 
 
@@ -73,14 +75,14 @@ class CodeIgniter_Sniffs_Strings_DoubleQuoteUsageSniff implements PHP_CodeSniffe
                 // if there is a mix of single and double quotes without variables,
                 // then users are invited to use single quoted strings.
                 if (false !== $dbl_qt_at && false === $variable_at) {
-                    $warning = 'It is encouraged to use singled quote string, since this string doesn\'t contain any variable though it mixes single and double quotes.';
+                    $warning = 'It is encouraged to use singl-quoted string, since this string doesn\'t contain any variable though it mixes single and double quotes.';
                     $phpcsFile->addWarning($warning, $stackPtr);
                 }
             } else if (false !== $variable_at) {
                 $has_a_smpl_qt_or_a_var = true;
             }
             if ( ! $has_a_smpl_qt_or_a_var) {
-                $error = 'Single quoted strings should be used unless the string contains variables or single quotes.';
+                $error = 'Single-quoted strings should be used unless the string contains variables or single quotes.';
                 $phpcsFile->addError($error, $stackPtr);
             }
         } else {

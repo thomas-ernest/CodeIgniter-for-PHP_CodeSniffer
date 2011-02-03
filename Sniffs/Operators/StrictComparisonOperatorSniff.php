@@ -15,7 +15,8 @@
 /**
  * CodeIgniter_Sniffs_Operators_StrictComparisonOperatorSniff.
  *
- * Ensures that only strict comparison operators are used instead of equal operators.
+ * Ensures that only strict comparison operators are used instead of
+ * equal and not equal operators.
  *
  * @category  PHP
  * @package   PHP_CodeSniffer
@@ -39,10 +40,9 @@ class CodeIgniter_Sniffs_Operators_StrictComparisonOperatorSniff implements PHP_
     public function register()
     {
         return array(
-                T_IS_EQUAL,
-                T_IS_NOT_EQUAL,
-               );
-
+            T_IS_EQUAL,
+            T_IS_NOT_EQUAL,
+        );
     }//end register()
 
 

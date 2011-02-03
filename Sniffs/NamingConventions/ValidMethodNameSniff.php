@@ -13,13 +13,23 @@
  */
 
 if (class_exists('PHP_CodeSniffer_Standards_AbstractScopeSniff', true) === false) {
-    throw new PHP_CodeSniffer_Exception('Class PHP_CodeSniffer_Standards_AbstractScopeSniff not found');
+    $error = 'Class PHP_CodeSniffer_Standards_AbstractScopeSniff not found';
+    throw new PHP_CodeSniffer_Exception($error);
 }
 
 /**
  * CodeIgniter_Sniffs_NamingConventions_ValidMethodNameSniff.
  *
- * Checks the naming of classes.
+ * Ensures that class methods and functions areentirely lowercased and that
+ * words are separated with an underscore, and not CamelCased.
+ * Ensures that private class methods are prefixed with an underscore and that
+ * all other methods are not prefixed with an underscored.
+ * Ensures that names longer than 50 chars are prohibited. Likewise names longer
+ * than 35 chars raise a warning.
+ *
+ * @todo Use a rule property or a configuration variable to allow users to set
+ * their own maximum lengths for function and method names. Have a look at
+ * CodeIgniter_Sniffs_Files_ClosingLocationCommentSniff and application root.
  *
  * @category  PHP
  * @package   PHP_CodeSniffer
@@ -144,8 +154,7 @@ class CodeIgniter_Sniffs_NamingConventions_ValidMethodNameSniff extends PHP_Code
             $warning = "Try to avoid overly long and verbose names in finding a name shorter than $warning_limit chars.";
             $phpcsFile->addWarning($warning, $stackPtr);
         }
-        // @todo
-    }
+    }//end processTokenWithinScope()
 
 }//end class
 

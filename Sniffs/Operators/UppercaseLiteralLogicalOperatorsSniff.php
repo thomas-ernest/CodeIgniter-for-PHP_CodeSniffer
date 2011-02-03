@@ -15,8 +15,8 @@
 /**
  * CodeIgniter_Sniffs_Operators_UppercaseLiteralLogicalOperatorsSniff.
  *
- * Checks to ensure that the logical operators 'AND', 'OR' and 'XOR' are used
- * instead of their equivalents in lowercase or their symbolic equivalents.
+ * Ensures that the logical operators 'AND', 'OR' and 'XOR' are used
+ * instead of their lowercased or their symbolic equivalents.
  *
  * @category  PHP
  * @package   PHP_CodeSniffer
@@ -35,11 +35,11 @@ class CodeIgniter_Sniffs_Operators_UppercaseLiteralLogicalOperatorsSniff impleme
     private static function _getLiteralCodes()
     {
         return array(
-                T_LOGICAL_AND,
-                T_LOGICAL_OR,
-                T_LOGICAL_XOR,
+            T_LOGICAL_AND,
+            T_LOGICAL_OR,
+            T_LOGICAL_XOR,
         );
-    }
+    }// end _getLiteralCodes()
 
     /**
      * Return the set of logical operators as symbols.
@@ -49,10 +49,10 @@ class CodeIgniter_Sniffs_Operators_UppercaseLiteralLogicalOperatorsSniff impleme
     private static function _getSymbolicCodes()
     {
         return array(
-                T_BOOLEAN_AND,
-                T_BOOLEAN_OR,
+            T_BOOLEAN_AND,
+            T_BOOLEAN_OR,
         );
-    }
+    }//end _getSymbolicCodes()
 
     /**
      * Returns the literal corresponding to a logical operator provided
@@ -68,10 +68,10 @@ class CodeIgniter_Sniffs_Operators_UppercaseLiteralLogicalOperatorsSniff impleme
     private static function _getLiteralFromSymbol($symbol=null)
     {
         $symbol_to_literal = array(
-                         '&&' => 'AND',
-                         '||' => 'OR',
-                         '^'  => 'XOR',
-                        );
+            '&&' => 'AND',
+            '||' => 'OR',
+            '^'  => 'XOR',
+        );
         if (is_null($symbol)) {
             return $symbol_to_literal;
         } else if ( ! array_key_exists($symbol, $symbol_to_literal)) {
@@ -79,7 +79,7 @@ class CodeIgniter_Sniffs_Operators_UppercaseLiteralLogicalOperatorsSniff impleme
         } else {
             return $symbol_to_literal[$symbol];
         }
-    }
+    }//end _getLiteralFromSymbol()
 
     /**
      * Returns an array of tokens this test wants to listen for.

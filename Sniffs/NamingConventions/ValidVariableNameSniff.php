@@ -20,7 +20,19 @@ if (class_exists('PHP_CodeSniffer_Standards_AbstractVariableSniff', true) === fa
 /**
  * CodeIgniter_Sniffs_NamingConventions_ValidVariableNameSniff.
  *
- * Checks the naming of member variables.
+ * Ensures that variable names contain only lowercase letters,
+ * use underscore separators.
+ * Ensures that class attribute names are prefixed with an underscore,
+ * only when they are private.
+ * Ensure that variable names are longer than 3 chars except those declared
+ * in for loops.
+ *
+ * @todo Try to avoid overly long and verbose names in using property rule and
+ * configuration variable to set limits. Have a look at
+ * CodeIgniter_Sniffs_NamingConventions_ValidMethodNameSniff.
+ * @todo Use a property rule or a configuration variable to allow users to set
+ * minimum variable name length. Have a look at
+ * CodeIgniter_Sniffs_Files_ClosingLocationCommentSniff and application root.
  *
  * @category  PHP
  * @package   PHP_CodeSniffer
@@ -158,7 +170,7 @@ class CodeIgniter_Sniffs_NamingConventions_ValidVariableNameSniff extends PHP_Co
             $isInLowerCase = false;
         }
         return $isInLowerCase;
-    }
+    }//end checkLowerCase()
 
     /**
      * Checks that an underscore is used at the beginning of a variable only if
@@ -199,7 +211,7 @@ class CodeIgniter_Sniffs_NamingConventions_ValidVariableNameSniff extends PHP_Co
             $isVisibilityPrefixRight = false;
         }
         return $isVisibilityPrefixRight;
-    }
+    }//end checkVisibilityPrefix()
 
     /**
      * Checks that variable name length is not too short. Returns true, if it
@@ -252,7 +264,7 @@ class CodeIgniter_Sniffs_NamingConventions_ValidVariableNameSniff extends PHP_Co
             $isLengthRight = false;
         }
         return $isLengthRight;
-    }
+    }//end checkLength()
 
     /**
      * Returns the position of closest previous T_FOR, if token associated with
@@ -287,7 +299,7 @@ class CodeIgniter_Sniffs_NamingConventions_ValidVariableNameSniff extends PHP_Co
             }
         }
         return false;
-    }
+    }//end _isInForLoop()
 
     /**
      * Returns the position of closest previous T_FOR, if token associated with
@@ -328,7 +340,7 @@ class CodeIgniter_Sniffs_NamingConventions_ValidVariableNameSniff extends PHP_Co
             }
         }
         return $isInForLoop;
-    }
+    }//end _isInForLoopHead()
 
     /**
      * Returns the position of closest previous T_FOR, if token associated with
@@ -421,7 +433,7 @@ class CodeIgniter_Sniffs_NamingConventions_ValidVariableNameSniff extends PHP_Co
             }
         }
         return false;
-    }
+    }//end _isInForLoopBody()
 
     /**
      * Returns true if a variable declared in the head of the for loop pointed
@@ -453,7 +465,7 @@ class CodeIgniter_Sniffs_NamingConventions_ValidVariableNameSniff extends PHP_Co
             }
         }
         return $isDeclaredInFor;
-    }
+    }//end _isDeclaredInForLoop()
 
     /**
      * Returns list of pointers to variables declared in for loop associated to
@@ -494,7 +506,7 @@ class CodeIgniter_Sniffs_NamingConventions_ValidVariableNameSniff extends PHP_Co
             );
         }
         return $forVarPtrs;
-    }
+    }//end _getVarDeclaredInFor()
 
     /**
      * Returns the position of first occurrence of a PHP variable starting with

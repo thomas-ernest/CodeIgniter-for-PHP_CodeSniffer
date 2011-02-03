@@ -47,7 +47,6 @@ class CodeIgniter_Sniffs_WhiteSpace_DisallowSpaceIndentSniff implements PHP_Code
     public function register()
     {
         return array(T_WHITESPACE);
-
     }//end register()
 
 
@@ -74,7 +73,6 @@ class CodeIgniter_Sniffs_WhiteSpace_DisallowSpaceIndentSniff implements PHP_Code
             $error = 'Tabs must be used to indent lines; spaces are not allowed for code intendetion';
             $phpcsFile->addError($error, $stackPtr);
         }
-
     }//end process()
 
 

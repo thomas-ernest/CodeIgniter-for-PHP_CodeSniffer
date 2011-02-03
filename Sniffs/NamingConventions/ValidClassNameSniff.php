@@ -15,8 +15,12 @@
 /**
  * CodeIgniter_Sniffs_NamingConventions_ValidClassNameSniff.
  *
- * Ensures class and interface names start with a capital letter
- * and use _ separators.
+ * Ensures that class and interface names have their first letter uppercase
+ * and that words are separated with an underscore, and not CamelCased.
+ *
+ * @todo Try to avoid overly long and verbose names in using property rule and
+ * configuration variable to set limits. Have a look at
+ * CodeIgniter_Sniffs_NamingConventions_ValidMethodNameSniff.
  *
  * @category  PHP
  * @package   PHP_CodeSniffer
@@ -37,9 +41,9 @@ class CodeIgniter_Sniffs_NamingConventions_ValidClassNameSniff implements PHP_Co
     public function register()
     {
         return array(
-                T_CLASS,
-                T_INTERFACE,
-               );
+            T_CLASS,
+            T_INTERFACE,
+        );
 
     }//end register()
 

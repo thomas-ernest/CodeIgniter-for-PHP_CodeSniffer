@@ -15,7 +15,7 @@
 /**
  * CodeIgniter_Sniffs_WhiteSpace_LogicalNotSpacingSniff.
  *
- * Ensures that at least a space always precede and follow the logical operator !.
+ * Ensures that at exactly a space precedes and follows the logical operator !.
  *
  * @category  PHP
  * @package   PHP_CodeSniffer
@@ -35,9 +35,8 @@ class CodeIgniter_Sniffs_WhiteSpace_LogicalNotSpacingSniff implements PHP_CodeSn
     public function register()
     {
         return array(
-                T_BOOLEAN_NOT,
-               );
-
+            T_BOOLEAN_NOT,
+        );
     }//end register()
 
 

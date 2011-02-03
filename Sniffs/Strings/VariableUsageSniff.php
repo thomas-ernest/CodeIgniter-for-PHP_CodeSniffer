@@ -17,6 +17,8 @@
  *
  * Ensures that variables parsed in double-quoted strings are enclosed with
  * braces to prevent greedy token parsing.
+ * Single-quoted strings don't parse variables, so there is no risk of greedy
+ * token parsing.
  *
  * @category  PHP
  * @package   PHP_CodeSniffer
@@ -35,10 +37,9 @@ class CodeIgniter_Sniffs_Strings_VariableUsageSniff implements PHP_CodeSniffer_S
     public function register()
     {
         return array(
-                T_DOUBLE_QUOTED_STRING,
-                T_CONSTANT_ENCAPSED_STRING,
-               );
-
+            T_DOUBLE_QUOTED_STRING,
+            T_CONSTANT_ENCAPSED_STRING,
+        );
     }//end register()
 
 

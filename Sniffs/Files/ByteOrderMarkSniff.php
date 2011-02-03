@@ -34,15 +34,16 @@ class CodeIgniter_Sniffs_Files_ByteOrderMarkSniff implements PHP_CodeSniffer_Sni
     public function register()
     {
         return array( T_OPEN_TAG );
-    }
+    }//end register()
+
     /**
      * List of supported BOM definitions.
      *
      * Use encoding names as keys and hex BOM representations as values.
      *
-     * @return array(string=>string)
+     * @return array
      */
-    protected function bomDefinitions()
+    protected function getBomDefinitions()
     {
         return array(
             'UTF-8'       => 'efbbbf',
@@ -51,7 +52,7 @@ class CodeIgniter_Sniffs_Files_ByteOrderMarkSniff implements PHP_CodeSniffer_Sni
             'UTF-32 (BE)' => '0000feff',
             'UTF-32 (LE)' => 'fffe0000'
         );
-    }
+    }//end getBomDefinitions()
 
     /**
      * Process tokens.
@@ -78,7 +79,7 @@ class CodeIgniter_Sniffs_Files_ByteOrderMarkSniff implements PHP_CodeSniffer_Sni
 
         $tokens = $phpcsFile->getTokens();
         $fileStartString = $tokens[0]['content'];
-        foreach ($this->bomDefinitions() as $bomName => $expectedBomHex) {
+        foreach ($this->getBomDefinitions() as $bomName => $expectedBomHex) {
             $bomByteLength = strlen($expectedBomHex) / 2;
             $fileStartHex = bin2hex(substr($fileStartString, 0, $bomByteLength));
             if ($fileStartHex === $expectedBomHex) {
@@ -87,5 +88,5 @@ class CodeIgniter_Sniffs_Files_ByteOrderMarkSniff implements PHP_CodeSniffer_Sni
                 break;
             }
         }
-    }
+    }//end process()
 }

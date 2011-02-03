@@ -12,11 +12,28 @@
  * @link      http://pear.php.net/package/PHP_CodeSniffer
  */
 
+if (class_exists('CodeIgniter_Sniffs_Files_AbstractClosingCommentSniff', true) === false) {
+    $error = 'Class CodeIgniter_Sniffs_Files_AbstractClosingCommentSniff not found';
+    throw new PHP_CodeSniffer_Exception($error);
+}
+
 /**
  * CodeIgniter_Sniffs_Files_ClosingLocationCommentSniff.
  *
- * Checks to ensure that a comment containing the file location is available at the
- * end of the file. Only other comments are allowed to follow this specific comment.
+ * Ensures that a comment containing the file location exists at the end of file.
+ * Only other comments and whitespaces are allowed between this comment and
+ * the end of file.
+ *
+ * It may be all kind of comment like multi-line and inline C-style comments as
+ * well as PERL-style comments. Any number of white may separate comment delimiters
+ * from comment content. However, content has to be equal to template
+ * "Location: <file_path_relative_to_application_root>".
+ * Comparison between content and template is case-sensitive.
+ *
+ * There are several ways to configure the application root. In order of priority :
+ *   - Configuration variable ci_application_root.
+ *   - Rule property applicationRoot.
+ *   - Default value '/application/'
  *
  * @category  PHP
  * @package   PHP_CodeSniffer
@@ -25,9 +42,9 @@
  * @license   http://thomas.ernest.fr/developement/php_cs/licence GNU General Public License
  * @link      http://pear.php.net/package/PHP_CodeSniffer
  */
-class CodeIgniter_Sniffs_Files_ClosingLocationCommentSniff implements PHP_CodeSniffer_Sniff
+class CodeIgniter_Sniffs_Files_ClosingLocationCommentSniff extends CodeIgniter_Sniffs_Files_AbstractClosingCommentSniff
 {
-    public $appPath = '/application/';
+    public $applicationRoot = '/application/';
 
     /**
      * Returns an array of tokens this test wants to listen for.
@@ -63,11 +80,11 @@ class CodeIgniter_Sniffs_Files_ClosingLocationCommentSniff implements PHP_CodeSn
 
         $filePath = $phpcsFile->getFilename();
         $tokens = $phpcsFile->getTokens();
-        // removes the application path from the beginning of the file path
-        $locationPath = self::_getLocationPath($filePath, $this->appPath);
-        // add an error, if application path doesn't exist in current file path
+        // removes the application root from the beginning of the file path
+        $locationPath = self::_getLocationPath($filePath, self::_getAppRoot());
+        // add an error, if application root doesn't exist in current file path
         if (false === $locationPath) {
-            $error = 'Unable to find "' . $this->appPath . '" in file path "' . $filePath . '". Please set your project\'s application path in ruleset.xml.';
+            $error = 'Unable to find "' . self::_getAppRoot() . '" in file path "' . $filePath . '". Please set your project\'s application root.';
             $phpcsFile->addError($error, count($tokens) - 1);
             return;
         }
@@ -104,79 +121,31 @@ class CodeIgniter_Sniffs_Files_ClosingLocationCommentSniff implements PHP_CodeSn
     }//end process()
 
 
-
     /**
-     * Returns the comment without its delimiter(s) as well as leading
-     * and traling whitespaces.
-     *
-     * It removes the first #, the two first / (i.e. //) or the first /*
-     * and last \*\/. If a comment starts with /**, then the last * will remain
-     * as well as whitespaces between this star and the comment content.
-     *
-     * @param string $comment Comment containing either comment delimiter(s) and
-     * trailing or leading whitspaces to clean.
-     *
-     * @return string Comment without comment delimiter(s) and whitespaces.
-     */
-    private static function _getCommentContent ($comment)
-    {
-        if (self::_stringStartsWith($comment, '#')) {
-            $comment = substr($comment, 1);
-        } else if (self::_stringStartsWith($comment, '//')) {
-            $comment = substr($comment, 2);
-        } else if (self::_stringStartsWith($comment, '/*')) {
-            $comment = substr($comment, 2, strlen($comment) - 2 - 2);
-        }
-        $comment = trim($comment);
-        return $comment;
-    }
-
-    /**
-     * Binary safe string comparison between $needle and
-     * the beginning of $haystack. Returns true if $haystack starts with
-     * $needle, false otherwise.
-     *
-     * @param string $haystack The string to search in.
-     * @param string $needle   The string to search for.
-     *
-     * @return bool true if $haystack starts with $needle, false otherwise.
-     */
-    private static function _stringStartsWith ($haystack, $needle)
-    {
-        $startsWith = false;
-        if (strlen($needle) <= strlen($haystack)) {
-            $haystackBeginning = substr($haystack, 0, strlen($needle));
-            if (0 === strcmp($haystackBeginning, $needle)) {
-                $startsWith = true;
-            }
-        }
-        return $startsWith;
-    }
-
-    /**
-     * Returns the relative path from $appPath to $filePath, or false if
-     * $appPath cannot be found in $filePath, because $appPath is not a parent
+     * Returns the relative path from $appRoot to $filePath, or false if
+     * $appRoot cannot be found in $filePath, because $appRoot is not a parent
      * of $filePath.
      *
      * @param string $filePath Full path to the file being proceed.
-     * @param string $appPath  Partial or full path to the CodeIgniter
-     * application directory of the file being proceed. It must not contain the
-     * full path to the application directory, but at least the name of the
+     * @param string $appRoot  Partial or full path to the CodeIgniter
+     * application root of the file being proceed. It must not contain the
+     * full path to the application root, but at least the name of the
      * application root. Parent directory of the application root are allowed
      * but not mandatory.
      *
-     * @return string|bool The relative path from $appPath to $filePath, or
-     * false if $appPath cannot be found in $filePath.
+     * @return string|bool The relative path from $appRoot to $filePath, or
+     * false if $appRoot cannot be found in $filePath.
      */
-    private static function _getLocationPath ($filePath, $appPath)
+    private static function _getLocationPath ($filePath, $appRoot)
     {
-        // removes the application path from the beginning of the file path
-        $AppPathAt = strpos($filePath, $appPath);
-        if (false === $AppPathAt) {
+        // removes the path to application root
+        // from the beginning of the file path
+        $appRootAt = strpos($filePath, $appRoot);
+        if (false === $appRootAt) {
             return false;
         }
-        $localPath = substr($filePath, $AppPathAt + strlen($appPath));
-        // ensures the location path to be a local path.
+        $localPath = substr($filePath, $appRootAt + strlen($appRoot));
+        // ensures the location path to be a relative path starting with "./".
         if ( ! self::_stringStartsWith($localPath, './')) {
             $localPath = './' . $localPath;
         } else if ( ! self::_stringStartsWith($localPath, '.')
@@ -185,7 +154,28 @@ class CodeIgniter_Sniffs_Files_ClosingLocationCommentSniff implements PHP_CodeSn
             $localPath = '.' . $localPath;
         }
         return $localPath;
-    }
+    }//end _getLocationPath()
+
+
+    /**
+     * Returns the application root that should be used first.
+     *
+     * There are several ways to configure the application root.
+     * In order of priority :
+     *   - Configuration variable ci_application_root.
+     *   - Rule property applicationRoot.
+     *   - Default value '/application/'
+     *
+     * @return string Path to your project application root.
+     */
+    private static function _getAppRoot()
+    {
+        $appRoot = PHP_CodeSniffer::getConfigData('ci_application_root');
+        if (null === $appRoot) {
+            $appRoot = $this->applicationRoot;
+        }
+        return $appRoot;
+    }//end _getAppRoot()
 }//end class
 
 ?>

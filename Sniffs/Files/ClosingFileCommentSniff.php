@@ -12,11 +12,22 @@
  * @link      http://pear.php.net/package/PHP_CodeSniffer
  */
 
+if (class_exists('CodeIgniter_Sniffs_Files_AbstractClosingCommentSniff', true) === false) {
+    $error = 'Class CodeIgniter_Sniffs_Files_AbstractClosingCommentSniff not found';
+    throw new PHP_CodeSniffer_Exception($error);
+}
+
 /**
  * CodeIgniter_Sniffs_Files_ClosingFileCommentSniff.
  *
- * Checks to ensure that a comment containing the file name is available at the
- * end of the file. Only other comments are allowed to follow this specific comment.
+ * Ensures that a comment containing the file name is available at the end of file.
+ * Only other comments and whitespaces are allowed to follow this specific comment.
+ *
+ * It may be all kind of comment like multi-line and inline C-style comments as
+ * well as PERL-style comments. Any number of white may separate comment delimiters
+ * from comment content. However, content has to be equal to template
+ * "End of file <file_name>". Comparison between content and template is
+ * case-sensitive.
  *
  * @category  PHP
  * @package   PHP_CodeSniffer
@@ -25,7 +36,7 @@
  * @license   http://thomas.ernest.fr/developement/php_cs/licence GNU General Public License
  * @link      http://pear.php.net/package/PHP_CodeSniffer
  */
-class CodeIgniter_Sniffs_Files_ClosingFileCommentSniff implements PHP_CodeSniffer_Sniff
+class CodeIgniter_Sniffs_Files_ClosingFileCommentSniff extends CodeIgniter_Sniffs_Files_AbstractClosingCommentSniff
 {
 
     /**
@@ -93,55 +104,6 @@ class CodeIgniter_Sniffs_Files_ClosingFileCommentSniff implements PHP_CodeSniffe
             $phpcsFile->addError($error, $currentToken);
         }
     }//end process()
-
-    /**
-     * Returns the comment without its delimiter(s) as well as leading
-     * and traling whitespaces.
-     *
-     * It removes the first #, the two first / (i.e. //) or the first /*
-     * and last \*\/. If a comment starts with /**, then the last * will remain
-     * as well as whitespaces between this star and the comment content.
-     *
-     * @param string $comment Comment containing either comment delimiter(s) and
-     * trailing or leading whitspaces to clean.
-     *
-     * @return string Comment without comment delimiter(s) and whitespaces.
-     */
-    private static function _getCommentContent ($comment)
-    {
-        if (self::_stringStartsWith($comment, '#')) {
-            $comment = substr($comment, 1);
-        } else if (self::_stringStartsWith($comment, '//')) {
-            $comment = substr($comment, 2);
-        } else if (self::_stringStartsWith($comment, '/*')) {
-            $comment = substr($comment, 2, strlen($comment) - 2 - 2);
-        }
-        $comment = trim($comment);
-        return $comment;
-    }
-
-    /**
-     * Binary safe string comparison between $needle and
-     * the beginning of $haystack. Returns true if $haystack starts with
-     * $needle, false otherwise.
-     *
-     * @param string $haystack The string to search in.
-     * @param string $needle   The string to search for.
-     *
-     * @return bool true if $haystack starts with $needle, false otherwise.
-     */
-    private static function _stringStartsWith ($haystack, $needle)
-    {
-        $startsWith = false;
-        if (strlen($needle) <= strlen($haystack)) {
-            $haystackBeginning = substr($haystack, 0, strlen($needle));
-            if (0 === strcmp($haystackBeginning, $needle)) {
-                $startsWith = true;
-            }
-        }
-        return $startsWith;
-    }
-
 }//end class
 
 ?>

@@ -23,6 +23,8 @@ if (class_exists('PHP_CodeSniffer_Standards_AbstractScopeSniff', true) === false
  * Favor PHP 4 constructor syntax, which uses "function ClassName()".
  * Avoid PHP 5 constructor syntax, which uses "function __construct()".
  *
+ * @todo Try to avoid overly long and verbose names.
+ *
  * @category  PHP
  * @package   PHP_CodeSniffer
  * @author    Thomas Ernest <thomas.ernest@gmail.com>
