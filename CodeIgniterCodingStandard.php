@@ -48,7 +48,6 @@ class PHP_CodeSniffer_Standards_CodeIgniter_CodeIgniterCodingStandard extends PH
             'PEAR/Sniffs/Files/LineEndingsSniff.php',
             'Zend/Sniffs/Files/ClosingTagSniff.php',
             'Generic/Sniffs/PHP/DisallowShortOpenTagSniff.php',
-            'Squiz/Sniffs/Classes/ClassFileNameSniff.php',
             'Generic/Sniffs/NamingConventions/UpperCaseConstantNameSniff.php',
             'Generic/Sniffs/PHP/UpperCaseConstantSniff.php',
             'Generic/Sniffs/Formatting/DisallowMultipleStatementsSniff.php',
