@@ -7,7 +7,11 @@
       <property name="applicationRoot" value="/application/"/>
     </properties>
   </rule>
-  <rule ref="PEAR.Files.LineEndings"/>
+  <rule ref="Generic.Files.LineEndings">
+    <properties>
+      <property name="eolChar" value="\n"/>
+    </properties>
+  </rule>
   <rule ref="Zend.Files.ClosingTag"/>
   <rule ref="Generic.PHP.DisallowShortOpenTag"/>
   <rule ref="Generic.NamingConventions.UpperCaseConstantName"/>
