@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project>
+
+  <property name="src.dir" value="src" />
+  <property name="codingStandard" value="CodeIgniter" />
+  <!-- @todo also thinking about something like <property environment="env"/> and then env.PHPCS_HOME -->
+  <property name="phpcs.dir" value="/usr/share/php/PHP/CodeSniffer/" />
+  <!-- @todo find a way to allow users to forgot slash at the end of variable phpcs.dir -->
+  <property name="dst.dir" value="${phpcs.dir}Standards/${codingStandard}/" />
+
+  <target name="build">
+    <!-- delete dir="build" /-->
+    <mkdir dir="${dst.dir}" />
+    <copy todir="${dst.dir}">
+      <fileset dir="${src.dir}"/>
+    </copy>
+    <!-- delete deprecated file -->
+    <delete file="${dst.dir}/CodeIgniterCodingStandard.php"/>
+  </target>
+
+</project>
+
