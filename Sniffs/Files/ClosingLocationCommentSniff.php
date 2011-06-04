@@ -81,10 +81,10 @@ class CodeIgniter_Sniffs_Files_ClosingLocationCommentSniff extends CodeIgniter_S
         $filePath = $phpcsFile->getFilename();
         $tokens = $phpcsFile->getTokens();
         // removes the application root from the beginning of the file path
-        $locationPath = self::_getLocationPath($filePath, self::_getAppRoot());
+        $locationPath = self::_getLocationPath($filePath, $this->_getAppRoot());
         // add an error, if application root doesn't exist in current file path
         if (false === $locationPath) {
-            $error = 'Unable to find "' . self::_getAppRoot() . '" in file path "' . $filePath . '". Please set your project\'s application root.';
+            $error = 'Unable to find "' . $this->_getAppRoot() . '" in file path "' . $filePath . '". Please set your project\'s application root.';
             $phpcsFile->addError($error, count($tokens) - 1);
             return;
         }
@@ -168,7 +168,7 @@ class CodeIgniter_Sniffs_Files_ClosingLocationCommentSniff extends CodeIgniter_S
      *
      * @return string Path to your project application root.
      */
-    private static function _getAppRoot()
+    private function _getAppRoot()
     {
         $appRoot = PHP_CodeSniffer::getConfigData('ci_application_root');
         if (null === $appRoot) {
