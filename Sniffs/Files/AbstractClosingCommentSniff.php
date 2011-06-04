@@ -26,8 +26,25 @@
  * @license   http://thomas.ernest.fr/developement/php_cs/licence GNU General Public License
  * @link      http://pear.php.net/package/PHP_CodeSniffer
  */
-abstract class CodeIgniter_Sniffs_Files_AbstractClosingCommentSniff implements PHP_CodeSniffer_Sniff
+class CodeIgniter_Sniffs_Files_AbstractClosingCommentSniff implements PHP_CodeSniffer_Sniff
 {
+    /**
+     * As an abstract class, this sniff is not associated to any token.
+     */
+    public function register()
+    {
+      return array();
+    }
+
+    /**
+     * As an abstract class, this sniff is not dedicated to process a token.
+     */
+    public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
+    {
+      $error = __CLASS__.'::'.__METHOD__.' is abstract. Please develop this method in a child class.';
+      throw new PHP_CodeSniffer_Exception($error);
+    }
+
     /**
      * Returns the comment without its delimiter(s) as well as leading
      * and traling whitespaces.
