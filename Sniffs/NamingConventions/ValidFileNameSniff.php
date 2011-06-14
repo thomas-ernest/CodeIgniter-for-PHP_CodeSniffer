@@ -59,7 +59,7 @@ class CodeIgniter_Sniffs_NamingConventions_ValidFileNameSniff implements PHP_Cod
         // extracts filename without extension from its path.
         $fullPath = $phpcsFile->getFilename();
         $fileNameAndExt = basename($fullPath);
-        $fileName = substr($fileNameAndExt, 0, strrpos(f$ileNameAndExt, '.'));
+        $fileName = substr($fileNameAndExt, 0, strrpos($fileNameAndExt, '.'));
 
         if ($expectedFileName !== $fileName) {
             $errorTemplate = 'Filename "%s" doesn\'t match the name of the %s that it contains "%s" in lower case. "%s" was expected.';
