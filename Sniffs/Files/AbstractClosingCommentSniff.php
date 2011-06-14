@@ -58,7 +58,7 @@ class CodeIgniter_Sniffs_Files_AbstractClosingCommentSniff implements PHP_CodeSn
      *
      * @return string Comment without comment delimiter(s) and whitespaces.
      */
-    private static function _getCommentContent ($comment)
+    protected static function _getCommentContent ($comment)
     {
         if (self::_stringStartsWith($comment, '#')) {
             $comment = substr($comment, 1);
@@ -82,7 +82,7 @@ class CodeIgniter_Sniffs_Files_AbstractClosingCommentSniff implements PHP_CodeSn
      *
      * @return bool true if $haystack starts with $needle, false otherwise.
      */
-    private static function _stringStartsWith ($haystack, $needle)
+    protected static function _stringStartsWith ($haystack, $needle)
     {
         $startsWith = false;
         if (strlen($needle) <= strlen($haystack)) {
