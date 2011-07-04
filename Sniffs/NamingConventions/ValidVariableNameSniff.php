@@ -381,7 +381,7 @@ class CodeIgniter_Sniffs_NamingConventions_ValidVariableNameSniff extends PHP_Co
         while (false !== $openResearchScopePtr) {
             $closeParPtr = $phpcsFile->findPrevious(
                 array(T_CLOSE_PARENTHESIS),
-                $stackPtr,
+                $openResearchScopePtr,
                 null,
                 false,
                 null,
