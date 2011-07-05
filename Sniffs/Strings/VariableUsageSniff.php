@@ -7,7 +7,7 @@
  * @category  PHP
  * @package   PHP_CodeSniffer
  * @author    Thomas Ernest <thomas.ernest@baobaz.com>
- * @copyright 2006 Thomas Ernest
+ * @copyright 2011 Thomas Ernest
  * @license   http://thomas.ernest.fr/developement/php_cs/licence GNU General Public License
  * @link      http://pear.php.net/package/PHP_CodeSniffer
  */
@@ -23,7 +23,7 @@
  * @category  PHP
  * @package   PHP_CodeSniffer
  * @author    Thomas Ernest <thomas.ernest@baobaz.com>
- * @copyright 2006 Thomas Ernest
+ * @copyright 2011 Thomas Ernest
  * @license   http://thomas.ernest.fr/developement/php_cs/licence GNU General Public License
  * @link      http://pear.php.net/package/PHP_CodeSniffer
  */
@@ -36,10 +36,13 @@ class CodeIgniter_Sniffs_Strings_VariableUsageSniff implements PHP_CodeSniffer_S
      */
     public function register()
     {
+        /*
         return array(
             T_DOUBLE_QUOTED_STRING,
             T_CONSTANT_ENCAPSED_STRING,
         );
+        */
+        return array();
     }//end register()
 
 
@@ -55,77 +58,247 @@ class CodeIgniter_Sniffs_Strings_VariableUsageSniff implements PHP_CodeSniffer_S
     public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
-        $dbl_qt_string = $tokens[$stackPtr]['content'];
+        $string = $tokens[$stackPtr]['content'];
         // makes sure that it is about a double quote string,
         // since variables are not parsed out of double quoted string
-        $open_dbl_qt_str = substr($dbl_qt_string, 0, 1);
-        if (0 === strcmp($open_dbl_qt_str, '"')) {
-            // I couldn't use token_get_all('<?php '.$dbl_qt_string); in a clever way
-            $var_at = self::_getVariablePosition($dbl_qt_string, 0);
-            $error_added = false;
-            while ( ! $error_added && false !== $var_at) {
-                if ('{' !== substr($dbl_qt_string, $var_at + 1, 1)) {
-                    $error = 'It is prohibed to use a variable in a double quoted string without enclosing it in braces.';
-                    $phpcsFile->addError($error, $stackPtr);
-                    $error_added = true;
-                }
-                $var_at = self::_getVariablePosition($dbl_qt_string, $var_at + 1);
-            }
+        $openDblQtStr = substr($string, 0, 1);
+        if (0 === strcmp($openDblQtStr, '"')) {
+            $this->processDoubleQuotedString($phpcsFile, $stackPtr, $string);
+        } else if (0 === strcmp($openDblQtStr, "'")) {
+            $this->processSingleQuotedString($phpcsFile, $stackPtr, $string);
         }
     }//end process()
 
 
-
     /**
-     * Returns the position of first occurrence of a PHP variable starting with $
-     * in $haystack from $offset.
+     * Processes this test, when the token encountered is a double-quoted string.
      *
-     * @param string $haystack The string to search in.
-     * @param int    $offset   The optional offset parameter allows you to
-     *                         specify which character in haystack to start
-     *                         searching. The returned position is still
-     *                         relative to the beginning of haystack.
+     * @param PHP_CodeSniffer_File $phpcsFile   The current file being scanned.
+     * @param int                  $stackPtr    The position of the current token
+     *                                          in the stack passed in $tokens.
+     * @param string               $dblQtString The double-quoted string content,
+     *                                          i.e. without quotes.
      *
-     * @return mixed The position as an integer
-     *               or the boolean false, if no variable is found.
+     * @return void
      */
-    private static function _getVariablePosition($haystack, $offset = 0)
+    protected function processDoubleQuotedString (PHP_CodeSniffer_File $phpcsFile, $stackPtr, $dblQtString)
     {
-        $var_starts_at = strpos($haystack, '$', $offset);
-        $is_a_var = false;
-        while (false !== $var_starts_at && ! $is_a_var) {
-            // makes sure that $ is used for a variable and not as a symbol,
-            // if $ is protected with the escape char, then it is a symbol.
-            if (0 !== strcmp($haystack[$var_starts_at - 1], '\\')) {
-                if (0 === strcmp($haystack[$var_starts_at + 1], '{')) {
-                    // there is an opening brace in the right place
-                    // so it looks for the closing brace in the right place
-                    $hsChunk2 = substr($haystack, $var_starts_at + 2);
-                    if (1 === preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\}/', $hsChunk2)) {
-                        $is_a_var = true;
+        $variableFound = FALSE;
+        $strTokens = token_get_all('<?php '.$dblQtString);
+        $strPtr = 1; // skip php opening tag added by ourselves
+        $requireDblQuotes = FALSE;
+        while ($strPtr < count($strTokens)) {
+            $strToken = $strTokens[$strPtr];
+            if (is_array($strToken)) {
+                if (in_array($strToken[0], array(T_DOLLAR_OPEN_CURLY_BRACES, T_CURLY_OPEN))) {
+                    $strPtr++;
+                    try {
+                        $this->_parseVariable($strTokens, $strPtr);
+                    } catch (Exception $err) {
+                        $error = 'There is no variable, object nor array between curly braces. Please use the escape char for $ or {.';
+                        $phpcsFile->addError($error, $stackPtr);
                     }
-                } else {
-                    $hsChunk1 = substr($haystack, $var_starts_at + 1);
-                    if (1 === preg_match('/^[a-zA-Z_\x7f-\xff]/', $hsChunk1)) {
-                        // $ is used for a variable and not as a symbol,
-                        // since what follows $ matchs the definition of
-                        // a variable label for PHP.
-                        $is_a_var = true;
+                    $variableFound = TRUE;
+                    if ('}' !== $strTokens[$strPtr]) {
+                        $error = 'There is no matching closing curly brace.';
+                        $phpcsFile->addError($error, $stackPtr);
                     }
+                    // don't move forward, since it will be done in the main loop
+                    // $strPtr++;
+                } else if (T_VARIABLE === $strToken[0]) {
+                    $variableFound = TRUE;
+                    $error = "Variable {$strToken[1]} in double-quoted strings should be enclosed with curly braces. Please consider {{$strToken[1]}}";
+                    $phpcsFile->addError($error, $stackPtr);
                 }
             }
-            // update $var_starts_at for the next variable
-            // only if no variable was found, since it is returned otherwise.
-            if ( ! $is_a_var) {
-                $var_starts_at = strpos($haystack, '$', $var_starts_at + 1);
+            $strPtr++;
+        }
+        return $variableFound;
+    }//end processDoubleQuotedString()
+
+
+    /**
+     * Processes this test, when the token encountered is a single-quoted string.
+     *
+     * @param PHP_CodeSniffer_File $phpcsFile   The current file being scanned.
+     * @param int                  $stackPtr    The position of the current token
+     *                                          in the stack passed in $tokens.
+     * @param string               $sglQtString The single-quoted string content,
+     *                                          i.e. without quotes.
+     *
+     * @return void
+     */
+    protected function processSingleQuotedString (PHP_CodeSniffer_File $phpcsFile, $stackPtr, $sglQtString)
+    {
+        $variableFound = FALSE;
+        $strTokens = token_get_all('<?php '.$sglQtString);
+        $strPtr = 1; // skip php opening tag added by ourselves
+        while ($strPtr < count($strTokens)) {
+            $strToken = $strTokens[$strPtr];
+            if (is_array($strToken)) {
+                if (T_VARIABLE === $strToken[0]) {
+                    $error = "Variables like {$strToken[1]} should be in double-quoted strings only.";
+                    $phpcsFile->addError($error, $stackPtr);
+                }
+            }
+            $strPtr++;
+        }
+        return $variableFound;
+    }//end processSingleQuotedString()
+
+    /**
+     * Grammar rule to parse the use of a variable. Please notice that it
+     * doesn't manage the leading $.
+     * 
+     * _parseVariable ::= <variable>
+     *     | <variable>_parseObjectAttribute()
+     *     | <variable>_parseArrayIndexes()
+     *
+     * @exception Exception raised if $strTokens starting from $strPtr
+     *                      doesn't matched the rule.
+     *
+     * @param array $strTokens Tokens to parse.
+     * @param int   $strPtr    Pointer to the token where parsing starts.
+     *
+     * @return array The attribute name associated to index 'var', an array with
+     * indexes 'obj' and 'attr' or an array with indexes 'arr' and 'idx'.
+     */
+    private function _parseVariable ($strTokens, &$strPtr)
+    {
+        if ( ! in_array($strTokens[$strPtr][0], array(T_VARIABLE, T_STRING_VARNAME))) {
+            throw new Exception ('Expected variable name.');
+        }
+        $var = $strTokens[$strPtr][1];
+        $strPtr++;
+        $startStrPtr = $strPtr;
+        try {
+            $attr = $this->_parseObjectAttribute($strTokens, $strPtr);
+            return array ('obj' => $var, 'attr' => $attr);
+        } catch (Exception $err) {
+            if ($strPtr !== $startStrPtr) {
+                throw $err;
             }
         }
-        if ($is_a_var) {
-            return $var_starts_at;
-        } else {
-            return false;
+        try {
+            $idx = $this->_parseArrayIndexes($strTokens, $strPtr);
+            return array ('arr' => $var, 'idx' => $idx);
+        } catch (Exception $err) {
+            if ($strPtr !== $startStrPtr) {
+                throw $err;
+            }
         }
-    }//end _getVariablePosition()
+        return array ('var' => $var);
+    }//end _parseVariable()
+
+
+    /**
+     * Grammar rule to parse the use of an object attribute.
+     * 
+     * _parseObjectAttribute ::= -><attribute>
+     *     | -><attribute>_parseObjectAttribute()
+     *     | -><attribute>_parseArrayIndexes()
+     *
+     * @exception Exception raised if $strTokens starting from $strPtr
+     *                      doesn't matched the rule.
+     *
+     * @param array $strTokens Tokens to parse.
+     * @param int   $strPtr    Pointer to the token where parsing starts.
+     *
+     * @return mixed The attribute name as a string, an array with indexes
+     * 'obj' and 'attr' or an array with indexes 'arr' and 'idx'.
+     */
+    private function _parseObjectAttribute ($strTokens, &$strPtr)
+    {
+        if (T_OBJECT_OPERATOR !== $strTokens[$strPtr][0]) {
+            throw new Exception ('Expected ->.');
+        }
+        $strPtr++;
+        if (T_STRING !== $strTokens[$strPtr][0]) {
+            throw new Exception ('Expected an object attribute.');
+        }
+        $attr = $strTokens[$strPtr][1];
+        $strPtr++;
+        $startStrPtr = $strPtr;
+        try {
+            $sub_attr = $this->_parseObjectAttribute($strTokens, $strPtr);
+            return array ('obj' => $attr, 'attr' => $sub_attr);
+        } catch (Exception $err) {
+            if ($strPtr !== $startStrPtr) {
+                throw $err;
+            }
+        }
+        try {
+            $idx = $this->_parseArrayIndexes($strTokens, $strPtr);
+            return array ('arr' => $attr, 'idx' => $idx);
+        } catch (Exception $err) {
+            if ($strPtr !== $startStrPtr) {
+                throw $err;
+            }
+        }
+        return $attr;
+    }//end _parseObjectAttribute()
+
+
+    /**
+     * Grammar rule to parse the use of one or more array indexes.
+     * 
+     * _parseArrayIndexes ::= _parseArrayIndex()+
+     *
+     * @exception Exception raised if $strTokens starting from $strPtr
+     *                      doesn't matched the rule.
+     *
+     * @param array $strTokens Tokens to parse.
+     * @param int   $strPtr    Pointer to the token where parsing starts.
+     *
+     * @return array Indexes in the same order as in the string.
+     */
+    private function _parseArrayIndexes ($strTokens, &$strPtr)
+    {
+        $indexes = array($this->_parseArrayIndex($strTokens, $strPtr));
+        try {
+            while (1) {
+                $startStrPtr = $strPtr;
+                $indexes [] = $this->_parseArrayIndex($strTokens, $strPtr);
+            }
+        } catch (Exception $err) {
+            if (0 !== ($strPtr - $startStrPtr)) {
+                throw $err;
+            }
+            return $indexes;
+        }
+    }//end _parseArrayIndexes()
+
+
+    /**
+     * Grammar rule to parse the use of array index.
+     *
+     * _parseArrayIndex ::= [<index>]
+     *
+     * @exception Exception raised if $strTokens starting from $strPtr
+     *                      doesn't matched the rule.
+     *
+     * @param array $strTokens Tokens to parse.
+     * @param int   $strPtr    Pointer to the token where parsing starts.
+     *
+     * @return string Index between the 2 square brackets
+     */
+    private function _parseArrayIndex ($strTokens, &$strPtr)
+    {
+        if ('[' !== $strTokens[$strPtr]) {
+            throw new Exception ('Expected [.');
+        }
+        $strPtr++;
+        if (! in_array($strTokens[$strPtr][0], array(T_CONSTANT_ENCAPSED_STRING, T_LNUMBER))) {
+            throw new Exception ('Expected an array index.');
+        }
+        $index = $strTokens[$strPtr][1];
+        $strPtr++;
+        if (']' !== $strTokens[$strPtr]) {
+            throw new Exception ('Expected ].');
+        }
+        $strPtr++;
+        return $index;
+    }//end _parseArrayIndex()
 
 }//end class
 

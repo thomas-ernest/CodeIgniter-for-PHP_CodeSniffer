@@ -7,7 +7,7 @@
  * @category  PHP
  * @package   PHP_CodeSniffer
  * @author    Thomas Ernest <thomas.ernest@baobaz.com>
- * @copyright 2006 Thomas Ernest
+ * @copyright 2011 Thomas Ernest
  * @license   http://thomas.ernest.fr/developement/php_cs/licence GNU General Public License
  * @link      http://pear.php.net/package/PHP_CodeSniffer
  */
@@ -15,8 +15,9 @@
 /**
  * CodeIgniter_Sniffs_Strings_DoubleQuoteUsageSniff.
  *
- * Ensures that double-quoted strings are used only to parse variables or
- * to avoid escape characters before single quotes.
+ * Ensures that double-quoted strings are used only to parse variables,
+ * to avoid escape characters before single quotes or for chars that need
+ * to be interpreted like \r, \n or \t.
  * If a double-quoted string contain both single and double quotes
  * but no variable, then a warning is raised to encourage the use of
  * single-quoted strings.
@@ -24,11 +25,11 @@
  * @category  PHP
  * @package   PHP_CodeSniffer
  * @author    Thomas Ernest <thomas.ernest@baobaz.com>
- * @copyright 2006 Thomas Ernest
+ * @copyright 2011 Thomas Ernest
  * @license   http://thomas.ernest.fr/developement/php_cs/licence GNU General Public License
  * @link      http://pear.php.net/package/PHP_CodeSniffer
  */
-class CodeIgniter_Sniffs_Strings_DoubleQuoteUsageSniff implements PHP_CodeSniffer_Sniff
+class CodeIgniter_Sniffs_Strings_DoubleQuoteUsageSniff extends CodeIgniter_Sniffs_Strings_VariableUsageSniff
 {
     /**
      * Returns an array of tokens this test wants to listen for.
@@ -43,7 +44,6 @@ class CodeIgniter_Sniffs_Strings_DoubleQuoteUsageSniff implements PHP_CodeSniffe
         );
     }//end register()
 
-
     /**
      * Processes this test, when one of its tokens is encountered.
      *
@@ -55,100 +55,113 @@ class CodeIgniter_Sniffs_Strings_DoubleQuoteUsageSniff implements PHP_CodeSniffe
      */
     public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
     {
+        // no variable are in the string from here
         $tokens = $phpcsFile->getTokens();
-        $qt_string = $tokens[$stackPtr]['content'];
+        $qtString = $tokens[$stackPtr]['content'];
         // makes sure that it is about a double quote string,
         // since variables are not parsed out of double quoted string
-        $open_qt_str = substr($qt_string, 0, 1);
+        $open_qt_str = substr($qtString, 0, 1);
+
         // clean the enclosing quotes
-        $qt_string = substr($qt_string, 1, strlen($qt_string) - 1 - 1);
-        // compute some values used in both cases
-        $dbl_qt_at = strpos($qt_string, '"');
-        $smpl_qt_at = strpos($qt_string, "'");
+        $qtString = substr($qtString, 1, strlen($qtString) - 1 - 1);
+
         if (0 === strcmp($open_qt_str, '"')) {
-            // it is about a double quote string,
-            // so there should be at least a variable or a single quote
-            $has_a_smpl_qt_or_a_var = false;
-            $variable_at = self::_getVariablePosition($qt_string);
-            if (false !== $smpl_qt_at) {
-                $has_a_smpl_qt_or_a_var = true;
-                // if there is a mix of single and double quotes without variables,
-                // then users are invited to use single quoted strings.
-                if (false !== $dbl_qt_at && false === $variable_at) {
-                    $warning = 'It is encouraged to use singl-quoted string, since this string doesn\'t contain any variable though it mixes single and double quotes.';
-                    $phpcsFile->addWarning($warning, $stackPtr);
-                }
-            } else if (false !== $variable_at) {
-                $has_a_smpl_qt_or_a_var = true;
-            }
-            if ( ! $has_a_smpl_qt_or_a_var) {
-                $error = 'Single-quoted strings should be used unless the string contains variables or single quotes.';
-                $phpcsFile->addError($error, $stackPtr);
-            }
-        } else {
-            // if (0 === strcmp($open_qt_str, "'")) {
-            // it is about a single quoted string,
-            // if there is single quotes without additional double quotes,
-            // then user is allowed to use double quote to avoid having to
-            // escape single quotes.
-            if (false !== $smpl_qt_at && false === $dbl_qt_at) {
-                $warning = 'You may also use double-quoted strings if the string contains single quotes, so you do not have to use escape characters.';
-                $phpcsFile->addWarning($warning, $stackPtr);
-            }
+            $this->processDoubleQuotedString($phpcsFile, $stackPtr, $qtString);
+        } else if (0 === strcmp($open_qt_str, "'")) {
+            $this->processSingleQuotedString($phpcsFile, $stackPtr, $qtString);
         }
     }//end process()
 
 
     /**
-     * Returns the position of first occurrence of a PHP variable starting with $
-     * in $haystack from $offset.
+     * Processes this test, when the token encountered is a double-quoted string.
      *
-     * @param string $haystack The string to search in.
-     * @param int    $offset   The optional offset parameter allows you to
-     *                         specify which character in haystack to start
-     *                         searching. The returned position is still
-     *                         relative to the beginning of haystack.
+     * @param PHP_CodeSniffer_File $phpcsFile The current file being scanned.
+     * @param int                  $stackPtr  The position of the current token
+     *                                        in the stack passed in $tokens.
+     * @param string               $qtString  The double-quoted string content,
+     *                                        i.e. without quotes.
      *
-     * @return mixed The position as an integer
-     *               or the boolean false, if no variable is found.
+     * @return void
      */
-    private static function _getVariablePosition($haystack, $offset = 0)
+    protected function processDoubleQuotedString (PHP_CodeSniffer_File $phpcsFile, $stackPtr, $qtString)
     {
-        $var_starts_at = strpos($haystack, '$', $offset);
-        $is_a_var = false;
-        while (false !== $var_starts_at && ! $is_a_var) {
-            // makes sure that $ is used for a variable and not as a symbol,
-            // if $ is protected with the escape char, then it is a symbol.
-            if (0 !== strcmp($haystack[$var_starts_at - 1], '\\')) {
-                if (0 === strcmp($haystack[$var_starts_at + 1], '{')) {
-                    // there is an opening brace in the right place
-                    // so it looks for the closing brace in the right place
-                    $hsChunk2 = substr($haystack, $var_starts_at + 2);
-                    if (1 === preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\}/', $hsChunk2)) {
-                        $is_a_var = true;
-                    }
-                } else {
-                    $hsChunk1 = substr($haystack, $var_starts_at + 1);
-                    if (1 === preg_match('/^[a-zA-Z_\x7f-\xff]/', $hsChunk1)) {
-                        // $ is used for a variable and not as a symbol,
-                        // since what follows $ matchs the definition of
-                        // a variable label for PHP.
-                        $is_a_var = true;
-                    }
-                }
-            }
-            // update $var_starts_at for the next variable
-            // only if no variable was found, since it is returned otherwise.
-            if ( ! $is_a_var) {
-                $var_starts_at = strpos($haystack, '$', $var_starts_at + 1);
+        // so there should be at least a single quote or a special char
+        // if there are the 2 kinds of quote and no special char, then add a warning
+        $has_variable = parent::processDoubleQuotedString($phpcsFile, $stackPtr, '"'.$qtString.'"');
+        $has_specific_sequence = $this->_hasSpecificSequence($qtString);
+        $dbl_qt_at = strpos($qtString, '"');
+        $smpl_qt_at = strpos($qtString, "'");
+        if (false === $has_variable && false === $has_specific_sequence
+            && false === $smpl_qt_at
+        ) {
+            $error = 'Single-quoted strings should be used unless it contains variables, special chars like \n or single quotes.';
+            $phpcsFile->addError($error, $stackPtr);
+        } else if (false !== $smpl_qt_at && false !== $dbl_qt_at
+            && false === $has_variable && false === $has_specific_sequence
+        ) {
+            $warning = 'It is encouraged to use a single-quoted string, since it doesn\'t contain any variable nor special char though it mixes single and double quotes.';
+            $phpcsFile->addWarning($warning, $stackPtr);
+        }
+    }//end processDoubleQuotedString()
+
+
+    /**
+     * Processes this test, when the token encountered is a single-quoted string.
+     *
+     * @param PHP_CodeSniffer_File $phpcsFile The current file being scanned.
+     * @param int                  $stackPtr  The position of the current token
+     *                                        in the stack passed in $tokens.
+     * @param string               $qtString  The single-quoted string content,
+     *                                        i.e. without quotes.
+     *
+     * @return void
+     */
+    protected function processSingleQuotedString (PHP_CodeSniffer_File $phpcsFile, $stackPtr, $qtString)
+    {
+        // if there is single quotes without additional double quotes,
+        // then user is allowed to use double quote to avoid having to
+        // escape single quotes. Don't add the warning, if an error was
+        // already added, because a variable was found in a single-quoted
+        // string.
+        $has_variable = parent::processSingleQuotedString($phpcsFile, $stackPtr, "'".$qtString."'");
+        $dbl_qt_at = strpos($qtString, '"');
+        $smpl_qt_at = strpos($qtString, "'");
+        if (false === $has_variable && false !== $smpl_qt_at && false === $dbl_qt_at) {
+            $warning = 'You may also use double-quoted strings if the string contains single quotes, so you do not have to use escape characters.';
+            $phpcsFile->addWarning($warning, $stackPtr);
+        }
+    }//end processSingleQuotedString()
+
+    /**
+     * Return TRUE, if a sequence of chars that is parsed in a specific way
+     * in double-quoted strings is found, FALSE otherwise.
+     *
+     * @param string $string String in which sequence of special chars will
+     * be researched.
+     *
+     * @return TRUE, if a sequence of chars that is parsed in a specific way
+     * in double-quoted strings is found, FALSE otherwise.
+     *
+     * @link http://www.php.net/manual/en/language.types.string.php#language.types.string.syntax.double
+     */
+    private function _hasSpecificSequence($string)
+    {
+        $hasSpecificSequence = FALSE;
+        $specialMeaningStrs = array('\n', '\r', '\t', '\v', '\f');
+        foreach ($specialMeaningStrs as $splStr) {
+            if (FALSE !== strpos($string, $splStr)) {
+                $hasSpecificSequence = TRUE;
             }
         }
-        if ($is_a_var) {
-            return $var_starts_at;
-        } else {
-            return false;
+        $specialMeaningPtrns = array('\[0-7]{1,3}', '\x[0-9A-Fa-f]{1,2}');
+        foreach ($specialMeaningPtrns as $splPtrn) {
+            if (1 === preg_match("/{$splPtrn}/", $string)) {
+                $hasSpecificSequence = TRUE;
+            }
         }
-    }//end _getVariablePosition()
+        return $hasSpecificSequence;
+    }//end _hasSpecificSequence()
 
 }//end class
 
