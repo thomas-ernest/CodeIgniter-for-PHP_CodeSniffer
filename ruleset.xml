@@ -42,6 +42,12 @@
     </properties>
   </rule>
 
+  <!-- Use Allman style indenting. With the exception of Class declarations,
+       braces are always placed on a line by themselves, and indented at the same level as the control statement that "owns" them. -->
+  <rule ref="Generic.Functions.OpeningFunctionBraceBsdAllman"/>
+  <rule ref="PEAR.WhiteSpace.ScopeClosingBrace"/>
+  <rule ref="Generic.Functions.FunctionCallArgumentSpacing"/>
+
   <!-- @todo Please see PHP_CodeSniffer_Standards_CodeIgniter_CodeIgniterCodingStandard for more details about what there is to do -->
 </ruleset>
 
