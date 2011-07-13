@@ -62,9 +62,9 @@ class CodeIgniter_Sniffs_NamingConventions_ValidClassNameSniff implements PHP_Co
         $className = trim($phpcsFile->getDeclarationName($stackPtr));
         // compute the expected class name
         // [^_] means "something different from _", but not "nothing or something different from _"
-        $lcClassNameChunk = preg_replace('/[^_]([A-Z])/', '_${1}', $className);
+        $lcClassNameChunk = preg_replace('/([^_])([A-Z])/', '${1}_${2}', $className);
         $expectedClassName
-            = strtoupper($className[0]) . strtolower($lcClassNameChunk);
+            = strtoupper($className[0]) . strtolower(substr($lcClassNameChunk,1));
         // ensures that the current class name
         // and the expected class name are identical
         if (0 !== strcmp($className, $expectedClassName)) {
