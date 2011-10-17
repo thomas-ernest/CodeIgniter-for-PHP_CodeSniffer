@@ -90,7 +90,10 @@ class CodeIgniter_Sniffs_Files_Utf8EncodingSniff implements PHP_CodeSniffer_Snif
      */
     private static function _checkUtf8W3c($content)
     {
-        return 1 === preg_match(
+        $content_chunks=self::mb_chunk_split($content, 4096, '');
+    	foreach($content_chunks as $content_chunk)
+		{
+			$preg_result= preg_match(
             '%^(?:
                   [\x09\x0A\x0D\x20-\x7E]            # ASCII
                 | [\xC2-\xDF][\x80-\xBF]             # non-overlong 2-byte
@@ -101,8 +104,15 @@ class CodeIgniter_Sniffs_Files_Utf8EncodingSniff implements PHP_CodeSniffer_Snif
                 | [\xF1-\xF3][\x80-\xBF]{3}          # planes 4-15
                 |  \xF4[\x80-\x8F][\x80-\xBF]{2}     # plane 16
             )*$%xs',
-            $content
-        );
+            $content_chunk
+			);
+			if($preg_result!==1)
+			{
+				return false;
+			}
+
+		}
+		return true;
     }//end _checkUtf8W3c()
 
     /**
@@ -150,6 +160,56 @@ class CodeIgniter_Sniffs_Files_Utf8EncodingSniff implements PHP_CodeSniffer_Snif
         }
         return true;
     }//_checkUtf8Rfc3629()
+	 
+	 /**
+     * Splits a string to chunks of given size
+	 * This helps to avoid segmentation fault errors when large text is given
+     * Returns array of strings after splitting
+     *
+     * @param string $str String to split.
+	 * @param int $len number of characters per chunk
+     *
+     * @return array string array after splitting
+     *
+     * @see http://php.net/manual/en/function.chunk-split.php
+     */
+	private static function mb_chunk_split($str, $len, $glue) 
+	{
+		if (empty($str)) return false;
+		$array = self::mbStringToArray ($str);
+		$n = -1;
+		$new = Array();
+		foreach ($array as $char) {
+			$n++;
+			if ($n < $len) $new []= $char;
+			elseif ($n == $len) {
+				$new []= $glue . $char;
+				$n = 0;
+			}
+		}
+		return $new;
+	}//mb_chunk_split
+	/**
+     * Supporting function for mb_chunk_split
+     *
+     * @param string $str   
+	 *
+     * @return array 
+     *
+     * @see http://php.net/manual/en/function.chunk-split.php
+     */
+	private static function mbStringToArray ($str) 
+	{
+		if (empty($str)) return false;
+		$len = mb_strlen($str);
+		$array = array();
+		for ($i = 0; $i < $len; $i++) {
+			$array[] = mb_substr($str, $i, 1);
+		}
+		return $array;
+	}
+
+	
 
 }//end class
 
