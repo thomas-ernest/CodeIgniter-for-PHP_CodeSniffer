@@ -36,6 +36,9 @@ class CodeIgniter_Sniffs_NamingConventions_ConstructorNameSniff extends PHP_Code
 {
 
 
+    public $php5Constructors = '1';
+
+
     /**
      * Constructs the test with the tokens it wishes to listen for.
      *
@@ -66,24 +69,47 @@ class CodeIgniter_Sniffs_NamingConventions_ConstructorNameSniff extends PHP_Code
         $methodName = $phpcsFile->getDeclarationName($stackPtr);
         $className  = $phpcsFile->getDeclarationName($currScope);
 
-        if (strcasecmp($methodName, '__construct') === 0) {
-            $error = "PHP5 style constructors are not allowed; use \"$className\" instead";
-            $phpcsFile->addError($error, $stackPtr);
-        } else if (strcasecmp($methodName, $className) !== 0) {
-            // Not a constructor.
+	$isPhp4Constructor = strcasecmp($methodName, $className) === 0;
+	$isPhp5Constructor = strcasecmp($methodName, '__construct') === 0;
+        if ($this->php5Constructors != '0') {
+            if ($isPhp4Constructor) {
+                $error = "PHP4 style constructors are not allowed; use \"__construct\" instead";
+                $phpcsFile->addError($error, $stackPtr);
+            }
+        } else {
+            if ($isPhp5Constructor) {
+                $error = "PHP5 style constructors are not allowed; use \"$className\" instead";
+                $phpcsFile->addError($error, $stackPtr);
+            }
+        }
+        if ( ! $isPhp4Constructor && ! $isPhp5Constructor ) {
             return;
         }
 
         $tokens = $phpcsFile->getTokens();
 
-        // prepares the error message
-        $error = 'PHP5 style calls to parent constructors are not allowed.';
         $parentClassName = $phpcsFile->findExtendedClassName($currScope);
-        if (false !== $parentClassName) {
-            $error = "$error Please use \"parent::$parentClassName\" instead.";
+        $wrongConstructor = '';
+        // prepares the error message and wrong constructor
+        if ($this->php5Constructors != '0') {
+            $error = 'PHP4 style calls to parent constructors are not allowed.';
+            $error = "$error Please use \"parent::__construct\" instead.";
+            if (false !== $parentClassName) {
+                $wrongConstructor = $parentClassName;
+            }
+            // Else $wrongConstructor will be empty
+            // and the test expression will always be false.
+            // It doesn't check that no parent method should be called
+            // when no parent class is defined.
+        } else {
+            $error = 'PHP5 style calls to parent constructors are not allowed.';
+            if (false !== $parentClassName) {
+                $error = "$error Please use \"parent::$parentClassName\" instead.";
+            }
+            $wrongConstructor = '__construct';
         }
 
-        // looks for the use of a PHP5 constructor.
+        // looks for the use of a wrong constructor.
         $endFunctionIndex = $tokens[$stackPtr]['scope_closer'];
         $doubleColonIndex = $phpcsFile->findNext(
             array(T_DOUBLE_COLON),
@@ -92,7 +118,7 @@ class CodeIgniter_Sniffs_NamingConventions_ConstructorNameSniff extends PHP_Code
         );
         while ($doubleColonIndex) {
             if ($tokens[($doubleColonIndex + 1)]['code'] === T_STRING
-                && $tokens[($doubleColonIndex + 1)]['content'] === '__construct'
+                && $tokens[($doubleColonIndex + 1)]['content'] === $wrongConstructor
             ) {
                 $phpcsFile->addError($error, ($doubleColonIndex + 1));
             }
