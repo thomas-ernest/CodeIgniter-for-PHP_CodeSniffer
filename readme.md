@@ -24,6 +24,10 @@ Based on PHP_CodeSniffer **CodeIgniter-for-PHP_CodeSniffer** helps to validate m
 
 There is an [Apache Ant](http://ant.apache.org/) script at the root of the repository. It targets standard Linux environment like Ubuntu with PHP_CodeSniffer 1.3.0 or above installed via PEAR. It requires PHP (in its 5th version).
 
-Just go to the root of the project and type `ant` to set up **CodeIgniter-for-PHP_CodeSniffer**. Then you can go to you project folder and run `phpcs --standar=CodeIgniter my-file-or-my-directory.php`.
+Just go to the root of the project and type `ant` to set up **CodeIgniter-for-PHP_CodeSniffer**. 
+
+Check that it is installed type `phpcs -i` you should see a list of installed standards.
+
+Then you can go to you project folder and run `phpcs --standard=CodeIgniter my-file-or-my-directory.php`.
 
 If you work on a Windows platform or for any reason, it is easy to edit the installation script. You just need to change the property `phpcs.dir` in `build.xml` to point toward the directory containing PHP_CodeSniffer.
