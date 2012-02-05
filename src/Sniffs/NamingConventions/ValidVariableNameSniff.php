@@ -202,7 +202,7 @@ class CodeIgniter_Sniffs_NamingConventions_ValidVariableNameSniff extends PHP_Co
         } else if ($scope !== 'private' && $varName{0} === '_') {
             // If it's not a private variable,
             // then it must not start with an underscore.
-            if (true === $scopeSpecified) {
+            if (isset ($scopeSpecified) && true === $scopeSpecified) {
                 $error = "Public variable name \"$varName\" must not be prefixed with an underscore";
             } else {
                 $error = ucfirst($scope) . " variable name \"$varName\" must not be prefixed with an underscore";
