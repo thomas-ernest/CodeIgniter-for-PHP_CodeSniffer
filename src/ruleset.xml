@@ -13,9 +13,9 @@
     </properties>
   </rule>
 
-  <!-- Always use full PHP opening tags -->
-  <rule ref="Zend.Files.ClosingTag"/>
   <!-- PHP files should OMIT the closing PHP tag -->
+  <rule ref="Zend.Files.ClosingTag"/>
+  <!-- Always use full PHP opening tags -->
   <rule ref="Generic.PHP.DisallowShortOpenTag"/>
 
   <!-- Constants should always be fully uppercase -->
