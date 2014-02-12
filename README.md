@@ -1,6 +1,6 @@
 # CodeIgniter-for-PHP_CodeSniffer
 
-Provides sniffs for [PHP_CodeSniffer 1.3.0 and above](http://www.squizlabs.com/php-codesniffer) to check [CodeIgniter coding standard](http://codeigniter.com/user_guide/general/styleguide.html).
+Provides sniffs for [PHP_CodeSniffer 1.3.0 and above](http://www.squizlabs.com/php-codesniffer) to check [CodeIgniter coding standard](http://ellislab.com/codeigniter/user-guide/general/styleguide.html).
 
 ## A bit of story
 
@@ -16,7 +16,7 @@ By default sniffs for a few coding convetions are provided like PEAR, Zend, PHPC
 
 [CodeIgniter](http://codeigniter.com/) is a powerful PHP framework with a very small footprint, built for PHP coders who need a simple and elegant toolkit to create full-featured web applications.
 
-CodeIgniter is developed by EllisLab. The compagny follows some specific [coding rules](http://codeigniter.com/user_guide/general/styleguide.html) for their developments and for CodeIgniter especially.
+CodeIgniter is developed by EllisLab. The compagny follows some specific [coding rules](http://ellislab.com/codeigniter/user-guide/general/styleguide.html) for their developments and for CodeIgniter especially.
 
 Based on PHP_CodeSniffer **CodeIgniter-for-PHP_CodeSniffer** helps to validate most of the rules in CodeIgniter coding standard.
 
