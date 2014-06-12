@@ -70,7 +70,7 @@ class CodeIgniter_Sniffs_WhiteSpace_DisallowSpaceIndentSniff implements PHP_Code
         }
 
         if (strpos($tokens[$stackPtr]['content'], " ") !== false) {
-            $error = 'Tabs must be used to indent lines; spaces are not allowed for code intendetion';
+            $error = 'Tabs must be used to indent lines; spaces are not allowed for code indentation';
             $phpcsFile->addError($error, $stackPtr);
         }
     }//end process()
