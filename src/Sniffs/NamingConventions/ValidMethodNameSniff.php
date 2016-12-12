@@ -113,8 +113,9 @@ class CodeIgniter_Sniffs_NamingConventions_ValidMethodNameSniff extends PHP_Code
         }
 
         if (0 !== strcmp($methodName, strtolower($methodName))) {
-            $uscrdMethodName = preg_replace('/([A-Z])/', '_${1}', $methodName);
-            $expectedMethodName = strtolower($uscrdMethodName);
+            $methodName[0] = strtolower($methodName[0]);
+			$func = create_function('$c', 'return "_" . strtolower($c[1]);');
+			$expectedMethodName = preg_replace_callback('/([A-Z])/', $func, $methodName);
             $error = "Class methods should be entirely lowercased. Please consider \"$expectedMethodName\" instead of \"$methodName\".";
             $phpcsFile->addError($error, $stackPtr);
             return;
